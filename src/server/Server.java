@@ -1,69 +1,49 @@
 package server;
 
 import java.io.OutputStream;
-import java.util.concurrent.Semaphore;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
-public class Server implements CommunicationMessageListener {
-	
+public class Server implements Runnable {
+
 	final String INITIAL_MESSAGE = "hi";
-	final String FINAL_MESSAGE = "bye"; 
+	final String FINAL_MESSAGE = "bye";
 	final String ACKNOWLEDGE_MESSAGEMENT = "ok";
-	
-	private Communication comm;
-	
-	private boolean inConnection;
-	
-	private final Semaphore semaphore;
-	
-	private OutputStream outputStream;
-	
-	Server(Communication comm){
-		semaphore = new Semaphore(1);
-		this.comm = comm;
-		comm.setOnMessageListener(this);
-		comm.initialize();
-	}
-	
-	public void onMessageReceived(String message) {
-		System.out.println(message);
-		if (inConnection) {
-			if (message.equals(FINAL_MESSAGE))
-			{
-				inConnection = false;
-				comm.sendMessage(FINAL_MESSAGE);
+
+	private ConcurrentLinkedQueue<String> receiveQueue;
+	private ConcurrentLinkedQueue<String> sendQueue;
+
+	@Override
+	public void run() {
+
+		while (true) {		
+			String receivedMessage;
+			while ((receivedMessage = receiveQueue.poll()) != null) {
+				System.out.println("message received: " + receivedMessage);
+				sendQueue.add("received: " + receivedMessage);
 			}
-			else if (message.equals(ACKNOWLEDGE_MESSAGEMENT))
-			{
-				semaphore.release();
+			
+			try {
+				Thread.currentThread().sleep(200);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
 		}
-		else {
-			if (message.equals(INITIAL_MESSAGE))
-			{
-				inConnection = true;
-				comm.sendMessage(INITIAL_MESSAGE);
-				startDiscover();
-			}
-			else
-			{
-				System.out.println("The first message should be:" + INITIAL_MESSAGE);
-				comm.sendMessage("The first message should be:" + INITIAL_MESSAGE);
-			}
-		}
+
 	}
-	
+
+	Server(ConcurrentLinkedQueue receiveQueue, ConcurrentLinkedQueue sendQueue) {
+		this.receiveQueue = receiveQueue;
+		this.sendQueue = sendQueue;
+	}
+
 	private void startDiscover() {
-		comm.sendMessage("cell_size:cm");
-		try {
-			semaphore.acquire();
-			discoverArea();
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
+		// comm.sendMessage("cell_size:cm");
+		discoverArea();
 	}
-	
+
 	private void discoverArea() {
-		comm.sendMessage("measure_cells:LRFB");
+		// comm.sendMessage("measure_cells:LRFB");
 	}
 
 }

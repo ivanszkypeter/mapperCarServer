@@ -7,10 +7,27 @@ import gnu.io.SerialPortEventListener;
 
 import java.io.*;
 import java.util.Enumeration;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
-public class Communication implements SerialPortEventListener {
+public class Communication implements SerialPortEventListener, Runnable {
 
 	SerialPort serialPort;
+
+	private ConcurrentLinkedQueue<String> receiveQueue;
+	private ConcurrentLinkedQueue<String> sendQueue;
+
+	public Communication(ConcurrentLinkedQueue receiveQueue, ConcurrentLinkedQueue sendQueue) {
+		/*
+		 * Thread t=new Thread() { public void run() { //the following line will
+		 * keep this app alive for 1000 seconds, //waiting for events to occur
+		 * and responding to them (printing incoming messages to console). try
+		 * {Thread.sleep(1000000);} catch (InterruptedException ie) {} } };
+		 * t.start();
+		 */
+
+		this.receiveQueue = receiveQueue;
+		this.sendQueue = sendQueue;
+	}
 
 	private static final String PORT_NAMES[] = { "/dev/tty.usbserial-A9007UX1", // Mac
 																				// OS
@@ -20,27 +37,36 @@ public class Communication implements SerialPortEventListener {
 			"COM9", // Windows
 			"COM12", // Windows
 	};
+
+	@Override
+	public void run() {
+		initialize();
+
+		while (true) {
+			String messageToSend;
+			while ((messageToSend = sendQueue.poll()) != null) {
+				sendMessage(messageToSend);
+			}
+			
+			try {
+				Thread.currentThread().sleep(200);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
 		
-	public void sendMessage(String msg) {
-		 try {
-			output.write(msg + "\n");
-			output.flush();	
-		} catch (IOException e) {		
-			e.printStackTrace();
-		}	 	 
+		// TODO programból kultúrált kilépés
+
 	}
 
-	private CommunicationMessageListener communicationMessageListener;
-
-	public Communication() {
-		Thread t=new Thread() {
-			public void run() {
-				//the following line will keep this app alive for 1000 seconds,
-				//waiting for events to occur and responding to them (printing incoming messages to console).
-				try {Thread.sleep(1000000);} catch (InterruptedException ie) {}
-			}
-		};
-		t.start();
+	private void sendMessage(String msg) {
+		try {
+			output.write(msg + "\n");
+			output.flush();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 	/**
@@ -57,7 +83,7 @@ public class Communication implements SerialPortEventListener {
 	/** Default bits per second for COM port. */
 	private static final int DATA_RATE = 9600;
 
-	public void initialize() {
+	private void initialize() {
 		// the next line is for Raspberry Pi and
 		// gets us into the while loop and was suggested here was suggested
 		// http://www.raspberrypi.org/phpBB3/viewtopic.php?f=81&t=32186
@@ -68,8 +94,7 @@ public class Communication implements SerialPortEventListener {
 
 		// First, Find an instance of serial port as set in PORT_NAMES.
 		while (portEnum.hasMoreElements()) {
-			CommPortIdentifier currPortId = (CommPortIdentifier) portEnum
-					.nextElement();
+			CommPortIdentifier currPortId = (CommPortIdentifier) portEnum.nextElement();
 			for (String portName : PORT_NAMES) {
 				if (currPortId.getName().equals(portName)) {
 					portId = currPortId;
@@ -84,18 +109,15 @@ public class Communication implements SerialPortEventListener {
 
 		try {
 			// open serial port, and use class name for the appName.
-			serialPort = (SerialPort) portId.open(this.getClass().getName(),
-					TIME_OUT);
+			serialPort = (SerialPort) portId.open(this.getClass().getName(), TIME_OUT);
 
 			// set port parameters
-			serialPort.setSerialPortParams(DATA_RATE, SerialPort.DATABITS_8,
-					SerialPort.STOPBITS_1, SerialPort.PARITY_NONE);
+			serialPort.setSerialPortParams(DATA_RATE, SerialPort.DATABITS_8, SerialPort.STOPBITS_1,
+					SerialPort.PARITY_NONE);
 
 			// open the streams
-			input = new BufferedReader(new InputStreamReader(
-					serialPort.getInputStream()));
-			output  = new BufferedWriter(new OutputStreamWriter(
-					serialPort.getOutputStream()));
+			input = new BufferedReader(new InputStreamReader(serialPort.getInputStream()));
+			output = new BufferedWriter(new OutputStreamWriter(serialPort.getOutputStream()));
 
 			// add event listeners
 			serialPort.addEventListener(this);
@@ -104,10 +126,10 @@ public class Communication implements SerialPortEventListener {
 			System.err.println(e.toString());
 		}
 	}
-	
+
 	/**
-	 * This should be called when you stop using the port.
-	 * This will prevent port locking on platforms like Linux.
+	 * This should be called when you stop using the port. This will prevent
+	 * port locking on platforms like Linux.
 	 */
 	public synchronized void close() {
 		if (serialPort != null) {
@@ -122,17 +144,14 @@ public class Communication implements SerialPortEventListener {
 	public synchronized void serialEvent(SerialPortEvent oEvent) {
 		if (oEvent.getEventType() == SerialPortEvent.DATA_AVAILABLE) {
 			try {
-				String inputLine=input.readLine();
-				communicationMessageListener.onMessageReceived(inputLine);
+				String inputLine = input.readLine();
+				receiveQueue.add(inputLine);
 			} catch (Exception e) {
 				System.err.println(e.toString());
 			}
 		}
-		// Ignore all the other eventTypes, but you should consider the other ones.
-	}
-
-	public void setOnMessageListener(CommunicationMessageListener listener) {
-		communicationMessageListener = listener;
+		// Ignore all the other eventTypes, but you should consider the other
+		// ones.
 	}
 
 }
