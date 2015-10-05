@@ -35,7 +35,8 @@ public class Communication implements SerialPortEventListener, Runnable {
 			"/dev/ttyACM0", // Raspberry Pi
 			"/dev/ttyUSB0", // Linux
 			"COM9", // Windows
-			"COM12", // Windows
+			//"COM12", // Windows
+			"COM20",
 	};
 
 	@Override
@@ -62,8 +63,10 @@ public class Communication implements SerialPortEventListener, Runnable {
 
 	private void sendMessage(String msg) {
 		try {
-			output.write(msg + "\n");
+			output.write(msg);
 			output.flush();
+			
+			System.out.println("message to send: "+msg);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -146,6 +149,8 @@ public class Communication implements SerialPortEventListener, Runnable {
 			try {
 				String inputLine = input.readLine();
 				receiveQueue.add(inputLine);
+				
+				System.out.println("message received: " + inputLine);
 			} catch (Exception e) {
 				System.err.println(e.toString());
 			}
