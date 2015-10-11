@@ -13,6 +13,8 @@ public class Server implements Runnable {
 	final String INITIAL_MESSAGE = "hi";
 	final String FINAL_MESSAGE = "bye";
 	final String ACKNOWLEDGE_MESSAGE = "ok";
+	
+	private final int SLEEP_TIME = 500;
 
 	private ConcurrentLinkedQueue<String> receiveQueue;
 	private ConcurrentLinkedQueue<String> sendQueue;
@@ -53,7 +55,7 @@ public class Server implements Runnable {
 			setCellSize();
 		} else {
 			try {
-				Thread.sleep(400);
+				Thread.sleep(SLEEP_TIME);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
@@ -109,7 +111,7 @@ public class Server implements Runnable {
 		String message = isMessageStartingWith("cell_info:");
 		if (message == null) {
 			try {
-				Thread.sleep(400);
+				Thread.sleep(SLEEP_TIME);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
@@ -122,31 +124,68 @@ public class Server implements Runnable {
 			directionsToMeasure.put(Field.Direction.FORWARD, Field.FieldType.UNKNOWN);
 			directionsToMeasure.put(Field.Direction.BACKWARD, Field.FieldType.UNKNOWN);
 			if (array[1].substring(1,2).equals("f")) {
-				directionsToMeasure.put(Field.Direction.LEFT, Field.FieldType.FREE);
+				directionsToMeasure.put(Field.Direction.LEFT, Field.FieldType.FREE_NOT_VISITED);
 			} else if (array[1].substring(1,2).equals("o")) {
 				directionsToMeasure.put(Field.Direction.LEFT, Field.FieldType.OCCUPIED);
 			}
 
 			if (array[1].substring(3,4).equals("f")) {
-				directionsToMeasure.put(Field.Direction.RIGHT, Field.FieldType.FREE);
+				directionsToMeasure.put(Field.Direction.RIGHT, Field.FieldType.FREE_NOT_VISITED);
 			} else if (array[1].substring(3,4).equals("o")) {
 				directionsToMeasure.put(Field.Direction.RIGHT, Field.FieldType.OCCUPIED);
 			}
 
 			if (array[1].substring(5,6).equals("f")) {
-				directionsToMeasure.put(Field.Direction.FORWARD, Field.FieldType.FREE);
+				directionsToMeasure.put(Field.Direction.FORWARD, Field.FieldType.FREE_NOT_VISITED);
 			} else if (array[1].substring(5,6).equals("o")) {
 				directionsToMeasure.put(Field.Direction.FORWARD, Field.FieldType.OCCUPIED);
 			}
 
 			if (array[1].substring(7,8).equals("f")) {
-				directionsToMeasure.put(Field.Direction.BACKWARD, Field.FieldType.FREE);
+				directionsToMeasure.put(Field.Direction.BACKWARD, Field.FieldType.FREE_NOT_VISITED);
 			} else if (array[1].substring(7,8).equals("o")) {
 				directionsToMeasure.put(Field.Direction.BACKWARD, Field.FieldType.OCCUPIED);
 			}
 
 			algorithm.cellInfoReceived(directionsToMeasure);
+			
+			goToCells();			
 		}
+	}
+	
+	private void goToCells(){
+		Field.Direction dir = algorithm.getNextField();
+		
+		String messageToSend = "go_to:";
+		switch(dir){
+			case LEFT:
+				messageToSend += "L";
+				break;
+			case RIGHT:
+				messageToSend += "R";
+				break;
+			case FORWARD:
+				messageToSend += "F";
+				break;
+			case BACKWARD:
+				messageToSend += "B";
+				break;
+		}
+		
+		sendQueue.add(messageToSend);
+		
+		while(!isMessage(ACKNOWLEDGE_MESSAGE)){
+			try {
+				Thread.sleep(SLEEP_TIME);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+		
+		// if ack message received:
+		algorithm.stepSuceeded();
+		
+		measureCells();
 	}
 
 }
