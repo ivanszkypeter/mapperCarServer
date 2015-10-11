@@ -121,27 +121,27 @@ public class Server implements Runnable {
 			directionsToMeasure.put(Field.Direction.RIGHT, Field.FieldType.UNKNOWN);
 			directionsToMeasure.put(Field.Direction.FORWARD, Field.FieldType.UNKNOWN);
 			directionsToMeasure.put(Field.Direction.BACKWARD, Field.FieldType.UNKNOWN);
-			if (array[1].substring(2).equals("f")) {
+			if (array[1].substring(1,2).equals("f")) {
 				directionsToMeasure.put(Field.Direction.LEFT, Field.FieldType.FREE);
-			} else if (array[1].substring(2).equals("o")) {
+			} else if (array[1].substring(1,2).equals("o")) {
 				directionsToMeasure.put(Field.Direction.LEFT, Field.FieldType.OCCUPIED);
 			}
 
-			if (array[1].substring(4).equals("f")) {
+			if (array[1].substring(3,4).equals("f")) {
 				directionsToMeasure.put(Field.Direction.RIGHT, Field.FieldType.FREE);
-			} else if (array[1].substring(4).equals("o")) {
+			} else if (array[1].substring(3,4).equals("o")) {
 				directionsToMeasure.put(Field.Direction.RIGHT, Field.FieldType.OCCUPIED);
 			}
 
-			if (array[1].substring(6).equals("f")) {
+			if (array[1].substring(5,6).equals("f")) {
 				directionsToMeasure.put(Field.Direction.FORWARD, Field.FieldType.FREE);
-			} else if (array[1].substring(6).equals("o")) {
+			} else if (array[1].substring(5,6).equals("o")) {
 				directionsToMeasure.put(Field.Direction.FORWARD, Field.FieldType.OCCUPIED);
 			}
 
-			if (array[1].substring(8).equals("f")) {
+			if (array[1].substring(7,8).equals("f")) {
 				directionsToMeasure.put(Field.Direction.BACKWARD, Field.FieldType.FREE);
-			} else if (array[1].substring(8).equals("o")) {
+			} else if (array[1].substring(7,8).equals("o")) {
 				directionsToMeasure.put(Field.Direction.BACKWARD, Field.FieldType.OCCUPIED);
 			}
 

@@ -36,7 +36,7 @@ public class Communication implements SerialPortEventListener, Runnable {
 			"/dev/ttyUSB0", // Linux
 			"COM9", // Windows
 			//"COM12", // Windows
-			"COM20",
+			"COM25",
 	};
 
 	@Override
@@ -63,7 +63,7 @@ public class Communication implements SerialPortEventListener, Runnable {
 
 	private void sendMessage(String msg) {
 		try {
-			output.write(msg);
+			output.write(msg+"\n");
 			output.flush();
 			
 			System.out.println("message to send: "+msg);
