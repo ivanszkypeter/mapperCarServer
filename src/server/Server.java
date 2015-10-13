@@ -204,30 +204,36 @@ public class Server implements Runnable {
 	
 	private void goToCells(){
 		Field.Direction dir = algorithm.getNextField();
-		
-		String messageToSend = "go_to:";
-		switch(dir){
-			case LEFT:
-				messageToSend += "L";
-				break;
-			case RIGHT:
-				messageToSend += "R";
-				break;
-			case FORWARD:
-				messageToSend += "F";
-				break;
-			case BACKWARD:
-				messageToSend += "B";
-				break;
+		if (dir != null)
+		{
+			String messageToSend = "go_to:";
+			switch(dir){
+				case LEFT:
+					messageToSend += "L";
+					break;
+				case RIGHT:
+					messageToSend += "R";
+					break;
+				case FORWARD:
+					messageToSend += "F";
+					break;
+				case BACKWARD:
+					messageToSend += "B";
+					break;
+			}
+
+			sendQueue.add(messageToSend);
+
+			waitFor(ACKNOWLEDGE_MESSAGE);
+
+			algorithm.stepSuceeded();
+
+			measureCells();
 		}
-		
-		sendQueue.add(messageToSend);
-
-		waitFor(ACKNOWLEDGE_MESSAGE);
-
-		algorithm.stepSuceeded();
-		
-		measureCells();
+		else
+		{
+			sendQueue.add("bye");
+		}
 	}
 
 }

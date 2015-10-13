@@ -39,9 +39,13 @@ public class Algorithm {
 		}
 
 		// if stucked
-		Field f = routeFromCenter.pop();
-		candidateCarPosition = f;
-		return currentCarPosition.getCoordinate().getDirectionBeetweenCoordinates(f.getCoordinate());
+		if (routeFromCenter.size() > 0)
+		{
+			Field f = routeFromCenter.pop();
+			candidateCarPosition = f;
+			return currentCarPosition.getCoordinate().getDirectionBeetweenCoordinates(f.getCoordinate());
+		}
+		return null;
 	}
 
 	public Map<Field.Direction, Boolean> whichFieldsToMeasure() {
