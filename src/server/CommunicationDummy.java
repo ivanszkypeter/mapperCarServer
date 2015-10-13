@@ -11,6 +11,10 @@ public class CommunicationDummy extends CommunicationAbstract implements Runnabl
 		super(receiveQueue, sendQueue);
 		messagesToPC.add("hi");
 		messagesToPC.add("ok");
+        messagesToPC.add("cell_info:LfRfFfBf");
+        messagesToPC.add("ok");
+        messagesToPC.add("cell_info:LfRfFfBf");
+        messagesToPC.add("ok");
 	}
 
 	@Override

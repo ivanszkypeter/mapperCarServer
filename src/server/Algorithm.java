@@ -77,7 +77,6 @@ public class Algorithm {
 	 *            cell is occupied
 	 */
 	public void cellInfoReceived(Map<Field.Direction, Field.FieldType> cellInfoMap) {
-		System.out.println("cell info received");
 		visitedField.add(currentCarPosition);
 		currentCarPosition.setStatus(Field.FieldType.FREE_VISITED);
 		for (Entry<Field.Direction, Field.FieldType> directionIsOccupied : cellInfoMap.entrySet()) {

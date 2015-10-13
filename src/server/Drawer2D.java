@@ -11,8 +11,11 @@ public class Drawer2D {
     }
 
     public void drawMap() {
+        System.out.print("MAP:");
         for (int i = getMaximumY(); i >= getMinimumY(); i--)
         {
+            if (i < getMaximumY())
+                System.out.print("    ");
             for (int j = getMinimumX(); j <= getMaximumX(); j++)
             {
                 Field field = searchFieldAtCoordinate(j,i);
