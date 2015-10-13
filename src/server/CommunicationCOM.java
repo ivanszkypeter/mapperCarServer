@@ -9,35 +9,20 @@ import java.io.*;
 import java.util.Enumeration;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-public class Communication implements SerialPortEventListener, Runnable {
+public class CommunicationCOM extends CommunicationAbstract implements SerialPortEventListener, Runnable {
 
 	SerialPort serialPort;
 
-	private ConcurrentLinkedQueue<String> receiveQueue;
-	private ConcurrentLinkedQueue<String> sendQueue;
-
-	public Communication(ConcurrentLinkedQueue receiveQueue, ConcurrentLinkedQueue sendQueue) {
-		/*
-		 * Thread t=new Thread() { public void run() { //the following line will
-		 * keep this app alive for 1000 seconds, //waiting for events to occur
-		 * and responding to them (printing incoming messages to console). try
-		 * {Thread.sleep(1000000);} catch (InterruptedException ie) {} } };
-		 * t.start();
-		 */
-
-		this.receiveQueue = receiveQueue;
-		this.sendQueue = sendQueue;
-	}
-
-	private static final String PORT_NAMES[] = { "/dev/tty.usbserial-A9007UX1", // Mac
-																				// OS
-																				// X
+	private static final String PORT_NAMES[] = {
+			"/dev/tty.usbserial-A9007UX1", // Mac OS X
 			"/dev/ttyACM0", // Raspberry Pi
 			"/dev/ttyUSB0", // Linux
-			"COM9", // Windows
-			//"COM12", // Windows
-			"COM25",
+			"COM7", // Windows
 	};
+
+	public CommunicationCOM(ConcurrentLinkedQueue receiveQueue, ConcurrentLinkedQueue sendQueue) {
+		super(receiveQueue, sendQueue);
+	}
 
 	@Override
 	public void run() {
@@ -66,7 +51,7 @@ public class Communication implements SerialPortEventListener, Runnable {
 			output.write(msg+"\n");
 			output.flush();
 			
-			System.out.println("message to send: "+msg);
+			System.out.println("PC -> CAR: "+msg);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -150,7 +135,7 @@ public class Communication implements SerialPortEventListener, Runnable {
 				String inputLine = input.readLine();
 				receiveQueue.add(inputLine);
 				
-				System.out.println("message received: " + inputLine);
+				System.out.println("CAR -> PC: " + inputLine);
 			} catch (Exception e) {
 				System.err.println(e.toString());
 			}

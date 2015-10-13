@@ -1,6 +1,5 @@
 package server;
 
-import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class Main {
@@ -10,7 +9,7 @@ public class Main {
 		ConcurrentLinkedQueue receiveQueue = new ConcurrentLinkedQueue<String>();
 		ConcurrentLinkedQueue sendQueue = new ConcurrentLinkedQueue<String>();
 
-		Thread communicationThread = new Thread(new Communication(receiveQueue, sendQueue));
+		Thread communicationThread = new Thread(new CommunicationCOM(receiveQueue, sendQueue));
 		Thread serverThread = new Thread(new Server(receiveQueue, sendQueue));
 		communicationThread.start();
 		serverThread.start();
