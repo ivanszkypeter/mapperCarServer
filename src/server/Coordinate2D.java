@@ -12,9 +12,6 @@ public class Coordinate2D implements CoordinateInterface<Coordinate2D> {
 		this.y = y;
 	}
 
-	public Coordinate2D() {
-	}
-
 	@Override
 	public Coordinate2D getNeighborCoordinate(Direction dir) {
 

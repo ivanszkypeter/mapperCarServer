@@ -1,8 +1,6 @@
 package server;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -17,7 +15,7 @@ public class Algorithm {
 	private Field currentCarPosition = null;
 	private Field candidateCarPosition = null;
 
-	private Set<Field> visitedField = new TreeSet<>();
+	private Set<Field> visitedFields = new TreeSet<>();
 	private Stack<Field> routeFromCenter =  new Stack<>();
 
 	private Drawer2D drawer = new Drawer2D();
@@ -28,8 +26,11 @@ public class Algorithm {
 		drawer.addField(currentCarPosition);
 	}
 
+	public Field getCurrentCarPosition() {
+		return currentCarPosition;
+	}
+
 	public Field.Direction getNextField() {
-		// return Field.Direction.RIGHT;
 		for (Entry<Field.Direction, Field> entry : currentCarPosition.getNeighbors().entrySet()) {
 			if (entry.getValue().getStatus().equals(Field.FieldType.FREE_NOT_VISITED)) {
 				routeFromCenter.push(currentCarPosition);
@@ -48,8 +49,45 @@ public class Algorithm {
 		return null;
 	}
 
-	public Map<Field.Direction, Boolean> whichFieldsToMeasure() {
+	public void setExistingNeighbors() {
+		Coordinate2D carCoordinate = (Coordinate2D)currentCarPosition.getCoordinate();
+		for (Field field : visitedFields) {
+			for (Entry<Field.Direction, Field> neighbourField : field.getNeighbors().entrySet())
+			{
+				Coordinate2D neighbourFieldCoordinate = (Coordinate2D) neighbourField.getValue().getCoordinate();
+				if (neighbourFieldCoordinate.getX() == carCoordinate.getX()+1
+						&& neighbourFieldCoordinate.getY() == carCoordinate.getY())
+				{
+					currentCarPosition.setNeighbor(Field.Direction.RIGHT, neighbourField.getValue());
+					neighbourField.getValue().setNeighbor(Field.Direction.LEFT, currentCarPosition);
+				}
 
+				if (neighbourFieldCoordinate.getX() == carCoordinate.getX()-1
+						&& neighbourFieldCoordinate.getY() == carCoordinate.getY())
+				{
+					currentCarPosition.setNeighbor(Field.Direction.LEFT, neighbourField.getValue());
+					neighbourField.getValue().setNeighbor(Field.Direction.RIGHT, currentCarPosition);
+				}
+
+				if (neighbourFieldCoordinate.getX() == carCoordinate.getX()
+						&& neighbourFieldCoordinate.getY() == carCoordinate.getY()+1)
+				{
+					currentCarPosition.setNeighbor(Field.Direction.FORWARD, neighbourField.getValue());
+					neighbourField.getValue().setNeighbor(Field.Direction.BACKWARD, currentCarPosition);
+				}
+
+				if (neighbourFieldCoordinate.getX() == carCoordinate.getX()
+						&& neighbourFieldCoordinate.getY() == carCoordinate.getY()-1)
+				{
+					currentCarPosition.setNeighbor(Field.Direction.BACKWARD, neighbourField.getValue());
+					neighbourField.getValue().setNeighbor(Field.Direction.FORWARD, currentCarPosition);
+				}
+			}
+		}
+	}
+
+	public Map<Field.Direction, Boolean> whichFieldsToMeasure() {
+		setExistingNeighbors();
 		Map<Field.Direction, Boolean> map = new HashMap<Field.Direction, Boolean>();
 			
 		if (currentCarPosition.getNeighbor(Field.Direction.LEFT) == null)
@@ -81,7 +119,7 @@ public class Algorithm {
 	 *            cell is occupied
 	 */
 	public void cellInfoReceived(Map<Field.Direction, Field.FieldType> cellInfoMap) {
-		visitedField.add(currentCarPosition);
+		visitedFields.add(currentCarPosition);
 		currentCarPosition.setStatus(Field.FieldType.FREE_VISITED);
 		for (Entry<Field.Direction, Field.FieldType> directionIsOccupied : cellInfoMap.entrySet()) {
 			if (!directionIsOccupied.getValue().equals(Field.FieldType.UNKNOWN)) {
@@ -97,6 +135,7 @@ public class Algorithm {
 				currentCarPosition.setNeighbor(directionIsOccupied.getKey(), newField);
 			}
 		}
+		drawer.setCarPosition(currentCarPosition);
 		drawer.drawMap();
 	}
 
@@ -117,7 +156,7 @@ public class Algorithm {
 	}
 
 	public Field searchFieldAtCoordinate(CoordinateInterface cord) {
-		for (Field field : visitedField) {
+		for (Field field : visitedFields) {
 			if (field.getCoordinate().equals(cord))
 				return field;
 		}
@@ -126,6 +165,5 @@ public class Algorithm {
 
 	public void stepSuceeded() {
 		currentCarPosition = candidateCarPosition;
-		
 	}
 }

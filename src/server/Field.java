@@ -61,7 +61,7 @@ public class Field implements Comparable {
 
 	@Override
 	public int compareTo(Object arg0) {
-		return this.equals(arg0)? 1 : 0;
+		return this.equals(arg0)? 0 : 1;
 	}
 
 }

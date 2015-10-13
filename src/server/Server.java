@@ -151,11 +151,10 @@ public class Server implements Runnable {
 		// sending message
 		sendQueue.add(messageToSend);
 
-		getCellInfo();
+		getCellInfo(directionsToMeasure);
 	}
 
-	private void getCellInfo() {
-		Map<Field.Direction, Boolean> directionsToMeasure = algorithm.whichFieldsToMeasure();
+	private void getCellInfo(Map<Field.Direction, Boolean> directionsToMeasure) {
 		String message = waitForMessageToStartWith("cell_info:");
 		String[] array = message.split(":");
 

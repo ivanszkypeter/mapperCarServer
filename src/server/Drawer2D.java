@@ -6,8 +6,14 @@ public class Drawer2D {
 
     private Set<Field> fields = new HashSet<>();
 
+    private Field carPosition;
+
     public void addField(Field field) {
         fields.add(field);
+    }
+
+    public void setCarPosition(Field field) {
+        carPosition = field;
     }
 
     public void drawMap() {
@@ -19,7 +25,7 @@ public class Drawer2D {
             for (int j = getMinimumX(); j <= getMaximumX(); j++)
             {
                 Field field = searchFieldAtCoordinate(j,i);
-                Character character = 'U';
+                Character character = ' ';
                 if (field != null)
                 {
                     Coordinate2D coordinate = (Coordinate2D) field.getCoordinate();
@@ -35,6 +41,8 @@ public class Drawer2D {
                             character = 'F';
                             break;
                     }
+                    if (field == carPosition)
+                        character = 'C';
                 }
                 System.out.print(character);
             }

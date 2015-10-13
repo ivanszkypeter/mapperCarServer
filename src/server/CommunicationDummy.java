@@ -10,11 +10,57 @@ public class CommunicationDummy extends CommunicationAbstract implements Runnabl
 	public CommunicationDummy(ConcurrentLinkedQueue receiveQueue, ConcurrentLinkedQueue sendQueue) {
 		super(receiveQueue, sendQueue);
 		messagesToPC.add("hi");
-		messagesToPC.add("ok");
-        messagesToPC.add("cell_info:LfRfFfBf");
         messagesToPC.add("ok");
         messagesToPC.add("cell_info:LfRfFfBf");
         messagesToPC.add("ok");
+        messagesToPC.add("cell_info:LfRfFfBf");
+        messagesToPC.add("ok");
+        messagesToPC.add("cell_info:LoRoFoBo");
+        messagesToPC.add("ok");
+        messagesToPC.add("cell_info:LfRfFfBf");
+        messagesToPC.add("ok");
+        messagesToPC.add("cell_info:LoRoFoBo");
+        messagesToPC.add("ok");
+        messagesToPC.add("cell_info:LfRfFfBf");
+        messagesToPC.add("ok");
+        messagesToPC.add("cell_info:LfRfFfBf");
+        messagesToPC.add("ok");
+        messagesToPC.add("cell_info:LoRoFoBo");
+        messagesToPC.add("ok");
+        messagesToPC.add("cell_info:LfRfFfBf");
+        messagesToPC.add("ok");
+        messagesToPC.add("cell_info:LoRoFoBo");
+        messagesToPC.add("ok");
+        messagesToPC.add("cell_info:LfRfFfBf");
+        messagesToPC.add("ok");
+        messagesToPC.add("cell_info:LoRoFoBo");
+        messagesToPC.add("ok");
+        messagesToPC.add("cell_info:LfRfFfBf");
+        messagesToPC.add("ok");
+        messagesToPC.add("cell_info:LoRoFoBo");
+        messagesToPC.add("ok");
+        messagesToPC.add("cell_info:LoRoFoBo");
+        messagesToPC.add("ok");
+        messagesToPC.add("cell_info:LoRoFoBo");
+        messagesToPC.add("ok");
+        messagesToPC.add("cell_info:LoRoFoBo");
+        messagesToPC.add("ok");
+        messagesToPC.add("cell_info:LoRoFoBo");
+        messagesToPC.add("ok");
+        messagesToPC.add("cell_info:LoRoFoBo");
+        messagesToPC.add("ok");
+        messagesToPC.add("cell_info:LoRoFoBo");
+        messagesToPC.add("ok");
+        messagesToPC.add("cell_info:LoRoFoBo");
+        messagesToPC.add("ok");
+        messagesToPC.add("cell_info:LoRoFoBo");
+        messagesToPC.add("ok");
+        messagesToPC.add("cell_info:LoRoFoBo");
+        messagesToPC.add("ok");
+        messagesToPC.add("cell_info:LoRoFoBo");
+        messagesToPC.add("ok");
+        messagesToPC.add("cell_info:LoRoFoBo");
+
 	}
 
 	@Override
