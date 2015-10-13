@@ -155,38 +155,49 @@ public class Server implements Runnable {
 	}
 
 	private void getCellInfo() {
+		Map<Field.Direction, Boolean> directionsToMeasure = algorithm.whichFieldsToMeasure();
 		String message = waitForMessageToStartWith("cell_info:");
 		String[] array = message.split(":");
-		Map<Field.Direction, Field.FieldType> directionsToMeasure = new HashMap<Field.Direction, Field.FieldType>();
-		directionsToMeasure.put(Field.Direction.LEFT, Field.FieldType.UNKNOWN);
-		directionsToMeasure.put(Field.Direction.RIGHT, Field.FieldType.UNKNOWN);
-		directionsToMeasure.put(Field.Direction.FORWARD, Field.FieldType.UNKNOWN);
-		directionsToMeasure.put(Field.Direction.BACKWARD, Field.FieldType.UNKNOWN);
-		if (array[1].substring(1,2).equals("f")) {
-			directionsToMeasure.put(Field.Direction.LEFT, Field.FieldType.FREE_NOT_VISITED);
-		} else if (array[1].substring(1,2).equals("o")) {
-			directionsToMeasure.put(Field.Direction.LEFT, Field.FieldType.OCCUPIED);
+
+		Map<Field.Direction, Field.FieldType> measuredDirections = new HashMap<Field.Direction, Field.FieldType>();
+		measuredDirections.put(Field.Direction.LEFT, Field.FieldType.UNKNOWN);
+		measuredDirections.put(Field.Direction.RIGHT, Field.FieldType.UNKNOWN);
+		measuredDirections.put(Field.Direction.FORWARD, Field.FieldType.UNKNOWN);
+		measuredDirections.put(Field.Direction.BACKWARD, Field.FieldType.UNKNOWN);
+
+		if (directionsToMeasure.get(Field.Direction.LEFT)) {
+			if (array[1].substring(1,2).equals("f")) {
+				measuredDirections.put(Field.Direction.LEFT, Field.FieldType.FREE_NOT_VISITED);
+			} else if (array[1].substring(1,2).equals("o")) {
+				measuredDirections.put(Field.Direction.LEFT, Field.FieldType.OCCUPIED);
+			}
 		}
 
-		if (array[1].substring(3,4).equals("f")) {
-			directionsToMeasure.put(Field.Direction.RIGHT, Field.FieldType.FREE_NOT_VISITED);
-		} else if (array[1].substring(3,4).equals("o")) {
-			directionsToMeasure.put(Field.Direction.RIGHT, Field.FieldType.OCCUPIED);
+		if (directionsToMeasure.get(Field.Direction.RIGHT)) {
+			if (array[1].substring(3, 4).equals("f")) {
+				measuredDirections.put(Field.Direction.RIGHT, Field.FieldType.FREE_NOT_VISITED);
+			} else if (array[1].substring(3, 4).equals("o")) {
+				measuredDirections.put(Field.Direction.RIGHT, Field.FieldType.OCCUPIED);
+			}
 		}
 
-		if (array[1].substring(5,6).equals("f")) {
-			directionsToMeasure.put(Field.Direction.FORWARD, Field.FieldType.FREE_NOT_VISITED);
-		} else if (array[1].substring(5,6).equals("o")) {
-			directionsToMeasure.put(Field.Direction.FORWARD, Field.FieldType.OCCUPIED);
+		if (directionsToMeasure.get(Field.Direction.FORWARD)) {
+			if (array[1].substring(5, 6).equals("f")) {
+				measuredDirections.put(Field.Direction.FORWARD, Field.FieldType.FREE_NOT_VISITED);
+			} else if (array[1].substring(5, 6).equals("o")) {
+				measuredDirections.put(Field.Direction.FORWARD, Field.FieldType.OCCUPIED);
+			}
 		}
 
-		if (array[1].substring(7,8).equals("f")) {
-			directionsToMeasure.put(Field.Direction.BACKWARD, Field.FieldType.FREE_NOT_VISITED);
-		} else if (array[1].substring(7,8).equals("o")) {
-			directionsToMeasure.put(Field.Direction.BACKWARD, Field.FieldType.OCCUPIED);
+		if (directionsToMeasure.get(Field.Direction.BACKWARD)) {
+			if (array[1].substring(7, 8).equals("f")) {
+				measuredDirections.put(Field.Direction.BACKWARD, Field.FieldType.FREE_NOT_VISITED);
+			} else if (array[1].substring(7, 8).equals("o")) {
+				measuredDirections.put(Field.Direction.BACKWARD, Field.FieldType.OCCUPIED);
+			}
 		}
 
-		algorithm.cellInfoReceived(directionsToMeasure);
+		algorithm.cellInfoReceived(measuredDirections);
 
 		goToCells();
 	}
