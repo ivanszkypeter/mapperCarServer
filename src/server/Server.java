@@ -70,7 +70,7 @@ public class Server implements Runnable {
 			measureCells();
 		} else {
 			try {
-				Thread.sleep(4000);
+				Thread.sleep(SLEEP_TIME);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
