@@ -20,8 +20,12 @@ public class Algorithm {
 	private Set<Field> visitedField = new TreeSet<>();
 	private Stack<Field> routeFromCenter =  new Stack<>();
 
+	private Drawer2D drawer = new Drawer2D();
+
 	public Algorithm() {
 		currentCarPosition = center;
+		currentCarPosition.setStatus(FieldType.FREE_VISITED);
+		drawer.addField(currentCarPosition);
 	}
 
 	public Field.Direction getNextField() {
@@ -84,11 +88,13 @@ public class Algorithm {
 				if (newField == null) {
 					newField = new Field(newCoordinate);
 					newField.setStatus(directionIsOccupied.getValue());
+					drawer.addField(newField);
 				}
 				newField.setNeighbor(getOppositeDirection(directionIsOccupied.getKey()), currentCarPosition);
 				currentCarPosition.setNeighbor(directionIsOccupied.getKey(), newField);
 			}
 		}
+		drawer.drawMap();
 	}
 
 	public Field.Direction getOppositeDirection(Field.Direction dir) {
