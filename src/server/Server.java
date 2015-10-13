@@ -14,7 +14,7 @@ public class Server implements Runnable {
 	final String FINAL_MESSAGE = "bye";
 	final String ACKNOWLEDGE_MESSAGE = "ok";
 	
-	private final int SLEEP_TIME = 500;
+	private final int SLEEP_TIME = 10;
 
 	private ConcurrentLinkedQueue<String> receiveQueue;
 	private ConcurrentLinkedQueue<String> sendQueue;
@@ -49,33 +49,80 @@ public class Server implements Runnable {
 		return null;
 	}
 
-	private void handshaking() {
-		if (isMessage(INITIAL_MESSAGE)) {
-			sendQueue.add("hi");
-			setCellSize();
-		} else {
+	/**
+	 * Block the thread until a specific message arrive.
+	 */
+	private void waitFor(String messageToWaitFor) {
+		while(!isMessage(messageToWaitFor)) {
 			try {
 				Thread.sleep(SLEEP_TIME);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
-			handshaking();
 		}
 	}
 
-	private void setCellSize() {
-		sendQueue.add("cell_size:" + cellSize);
-
-		if (isMessage(ACKNOWLEDGE_MESSAGE)) {
-			measureCells();
-		} else {
+	/**
+	 * Block the thread until a message with a specific starting arrive.
+	 * After that it returns with the whole message.
+	 */
+	private String waitForMessageToStartWith(String messageToWaitFor) {
+		String message;
+		while(true) {
+			message = isMessageStartingWith(messageToWaitFor);
+			if (message != null)
+				return message;
 			try {
 				Thread.sleep(SLEEP_TIME);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
-			setCellSize();
 		}
+	}
+
+	/**
+	 * Block the thread until a specific message arrive. Send periodically the ping.
+	 */
+	private void waitForAndPing(String messageToWaitFor, String messageToPing) {
+		int period = 0;
+		while(!isMessage(messageToWaitFor)) {
+			if (period % 100 == 0) {
+				sendQueue.add(messageToPing);
+			}
+			try {
+				Thread.sleep(SLEEP_TIME);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+			period++;
+		}
+	}
+
+	/**
+	 * Block the thread until a specific message arrive. After that immediately send an answer.
+	 */
+	private void waitForAndSend(String messageToWaitFor, String messageToSend) {
+		waitFor(messageToWaitFor);
+		sendQueue.add(messageToSend);
+	}
+
+	/**
+	 * Send a message and wait for its response.
+	 */
+	private void sendAndWaitFor(String messageToSend,String messageToWaitFor) {
+		waitForAndPing(messageToWaitFor, messageToSend);
+	}
+
+	/* Initial message sending between the communication parties.
+	 */
+	private void handshaking() {
+		waitForAndSend(INITIAL_MESSAGE, INITIAL_MESSAGE);
+		setCellSize();
+	}
+
+	private void setCellSize() {
+		sendAndWaitFor("cell_size:" + cellSize, ACKNOWLEDGE_MESSAGE);
+		measureCells();
 	}
 
 	private void measureCells() {
@@ -108,49 +155,40 @@ public class Server implements Runnable {
 	}
 
 	private void getCellInfo() {
-		String message = isMessageStartingWith("cell_info:");
-		if (message == null) {
-			try {
-				Thread.sleep(SLEEP_TIME);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-			getCellInfo();
-		} else {
-			String[] array = message.split(":");
-			Map<Field.Direction, Field.FieldType> directionsToMeasure = new HashMap<Field.Direction, Field.FieldType>();
-			directionsToMeasure.put(Field.Direction.LEFT, Field.FieldType.UNKNOWN);
-			directionsToMeasure.put(Field.Direction.RIGHT, Field.FieldType.UNKNOWN);
-			directionsToMeasure.put(Field.Direction.FORWARD, Field.FieldType.UNKNOWN);
-			directionsToMeasure.put(Field.Direction.BACKWARD, Field.FieldType.UNKNOWN);
-			if (array[1].substring(1,2).equals("f")) {
-				directionsToMeasure.put(Field.Direction.LEFT, Field.FieldType.FREE_NOT_VISITED);
-			} else if (array[1].substring(1,2).equals("o")) {
-				directionsToMeasure.put(Field.Direction.LEFT, Field.FieldType.OCCUPIED);
-			}
-
-			if (array[1].substring(3,4).equals("f")) {
-				directionsToMeasure.put(Field.Direction.RIGHT, Field.FieldType.FREE_NOT_VISITED);
-			} else if (array[1].substring(3,4).equals("o")) {
-				directionsToMeasure.put(Field.Direction.RIGHT, Field.FieldType.OCCUPIED);
-			}
-
-			if (array[1].substring(5,6).equals("f")) {
-				directionsToMeasure.put(Field.Direction.FORWARD, Field.FieldType.FREE_NOT_VISITED);
-			} else if (array[1].substring(5,6).equals("o")) {
-				directionsToMeasure.put(Field.Direction.FORWARD, Field.FieldType.OCCUPIED);
-			}
-
-			if (array[1].substring(7,8).equals("f")) {
-				directionsToMeasure.put(Field.Direction.BACKWARD, Field.FieldType.FREE_NOT_VISITED);
-			} else if (array[1].substring(7,8).equals("o")) {
-				directionsToMeasure.put(Field.Direction.BACKWARD, Field.FieldType.OCCUPIED);
-			}
-
-			algorithm.cellInfoReceived(directionsToMeasure);
-			
-			goToCells();			
+		String message = waitForMessageToStartWith("cell_info:");
+		String[] array = message.split(":");
+		Map<Field.Direction, Field.FieldType> directionsToMeasure = new HashMap<Field.Direction, Field.FieldType>();
+		directionsToMeasure.put(Field.Direction.LEFT, Field.FieldType.UNKNOWN);
+		directionsToMeasure.put(Field.Direction.RIGHT, Field.FieldType.UNKNOWN);
+		directionsToMeasure.put(Field.Direction.FORWARD, Field.FieldType.UNKNOWN);
+		directionsToMeasure.put(Field.Direction.BACKWARD, Field.FieldType.UNKNOWN);
+		if (array[1].substring(1,2).equals("f")) {
+			directionsToMeasure.put(Field.Direction.LEFT, Field.FieldType.FREE_NOT_VISITED);
+		} else if (array[1].substring(1,2).equals("o")) {
+			directionsToMeasure.put(Field.Direction.LEFT, Field.FieldType.OCCUPIED);
 		}
+
+		if (array[1].substring(3,4).equals("f")) {
+			directionsToMeasure.put(Field.Direction.RIGHT, Field.FieldType.FREE_NOT_VISITED);
+		} else if (array[1].substring(3,4).equals("o")) {
+			directionsToMeasure.put(Field.Direction.RIGHT, Field.FieldType.OCCUPIED);
+		}
+
+		if (array[1].substring(5,6).equals("f")) {
+			directionsToMeasure.put(Field.Direction.FORWARD, Field.FieldType.FREE_NOT_VISITED);
+		} else if (array[1].substring(5,6).equals("o")) {
+			directionsToMeasure.put(Field.Direction.FORWARD, Field.FieldType.OCCUPIED);
+		}
+
+		if (array[1].substring(7,8).equals("f")) {
+			directionsToMeasure.put(Field.Direction.BACKWARD, Field.FieldType.FREE_NOT_VISITED);
+		} else if (array[1].substring(7,8).equals("o")) {
+			directionsToMeasure.put(Field.Direction.BACKWARD, Field.FieldType.OCCUPIED);
+		}
+
+		algorithm.cellInfoReceived(directionsToMeasure);
+
+		goToCells();
 	}
 	
 	private void goToCells(){
@@ -173,16 +211,9 @@ public class Server implements Runnable {
 		}
 		
 		sendQueue.add(messageToSend);
-		
-		while(!isMessage(ACKNOWLEDGE_MESSAGE)){
-			try {
-				Thread.sleep(SLEEP_TIME);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-		}
-		
-		// if ack message received:
+
+		waitFor(ACKNOWLEDGE_MESSAGE);
+
 		algorithm.stepSuceeded();
 		
 		measureCells();
