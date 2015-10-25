@@ -8,11 +8,16 @@ public class Main {
 
 		ConcurrentLinkedQueue receiveQueue = new ConcurrentLinkedQueue<String>();
 		ConcurrentLinkedQueue sendQueue = new ConcurrentLinkedQueue<String>();
-
-		Thread communicationThread = new Thread(new CommunicationDummy(receiveQueue, sendQueue));
-		Thread serverThread = new Thread(new Server(receiveQueue, sendQueue));
+		
+		CommunicationCOM communicationCOM = new CommunicationCOM(receiveQueue, sendQueue);
+		Server server = new Server(receiveQueue, sendQueue);
+		
+		Thread communicationThread = new Thread(communicationCOM);
+		Thread serverThread = new Thread(server);
 		communicationThread.start();
 		serverThread.start();
+		
+		new GUI(communicationCOM, server);
 	}
 
 }

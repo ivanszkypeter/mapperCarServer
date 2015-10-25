@@ -14,10 +14,13 @@ public class CommunicationCOM extends CommunicationAbstract implements SerialPor
 	SerialPort serialPort;
 
 	private static final String PORT_NAMES[] = {
+			/*
 			"/dev/tty.usbserial-A9007UX1", // Mac OS X
 			"/dev/ttyACM0", // Raspberry Pi
 			"/dev/ttyUSB0", // Linux
-			"COM7", // Windows
+			*/
+			"COM39", // Windows
+			//"COM53",
 	};
 
 	public CommunicationCOM(ConcurrentLinkedQueue receiveQueue, ConcurrentLinkedQueue sendQueue) {
@@ -83,6 +86,7 @@ public class CommunicationCOM extends CommunicationAbstract implements SerialPor
 		// First, Find an instance of serial port as set in PORT_NAMES.
 		while (portEnum.hasMoreElements()) {
 			CommPortIdentifier currPortId = (CommPortIdentifier) portEnum.nextElement();
+			System.out.println(currPortId.getName());
 			for (String portName : PORT_NAMES) {
 				if (currPortId.getName().equals(portName)) {
 					portId = currPortId;
@@ -102,6 +106,7 @@ public class CommunicationCOM extends CommunicationAbstract implements SerialPor
 			// set port parameters
 			serialPort.setSerialPortParams(DATA_RATE, SerialPort.DATABITS_8, SerialPort.STOPBITS_1,
 					SerialPort.PARITY_NONE);
+			serialPort.setFlowControlMode(SerialPort.FLOWCONTROL_NONE);
 
 			// open the streams
 			input = new BufferedReader(new InputStreamReader(serialPort.getInputStream()));

@@ -13,7 +13,7 @@ public class Server implements Runnable {
 	final String INITIAL_MESSAGE = "hi";
 	final String FINAL_MESSAGE = "bye";
 	final String ACKNOWLEDGE_MESSAGE = "ok";
-	
+
 	private final int SLEEP_TIME = 10;
 
 	private ConcurrentLinkedQueue<String> receiveQueue;
@@ -25,6 +25,8 @@ public class Server implements Runnable {
 
 	private int cellSize = 24; // size of the cells in centimeters
 
+	private volatile Boolean closing = false;
+
 	Server(ConcurrentLinkedQueue receiveQueue, ConcurrentLinkedQueue sendQueue) {
 		this.receiveQueue = receiveQueue;
 		this.sendQueue = sendQueue;
@@ -33,7 +35,35 @@ public class Server implements Runnable {
 	@Override
 	public void run() {
 
-		handshaking();
+		// handshaking();
+
+		// send dummy messages
+		sendQueue.add("init message");
+		int i = 0;
+		while (!closing) {
+			sendQueue.add("message: " + i++);
+			
+			try {
+				Thread.sleep(15000l);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+
+			/*if (i > 1) {
+				while (receiveQueue.isEmpty()) {
+					try {
+						Thread.sleep(500l);
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+				}
+			}*/
+
+			if (!receiveQueue.isEmpty()) {
+				System.out.println(receiveQueue.poll());
+			}
+		}
+
 	}
 
 	private Boolean isMessage(String message) {
@@ -53,7 +83,7 @@ public class Server implements Runnable {
 	 * Block the thread until a specific message arrive.
 	 */
 	private void waitFor(String messageToWaitFor) {
-		while(!isMessage(messageToWaitFor)) {
+		while (!isMessage(messageToWaitFor)) {
 			try {
 				Thread.sleep(SLEEP_TIME);
 			} catch (InterruptedException e) {
@@ -63,12 +93,12 @@ public class Server implements Runnable {
 	}
 
 	/**
-	 * Block the thread until a message with a specific starting arrive.
-	 * After that it returns with the whole message.
+	 * Block the thread until a message with a specific starting arrive. After
+	 * that it returns with the whole message.
 	 */
 	private String waitForMessageToStartWith(String messageToWaitFor) {
 		String message;
-		while(true) {
+		while (true) {
 			message = isMessageStartingWith(messageToWaitFor);
 			if (message != null)
 				return message;
@@ -81,11 +111,12 @@ public class Server implements Runnable {
 	}
 
 	/**
-	 * Block the thread until a specific message arrive. Send periodically the ping.
+	 * Block the thread until a specific message arrive. Send periodically the
+	 * ping.
 	 */
 	private void waitForAndPing(String messageToWaitFor, String messageToPing) {
 		int period = 0;
-		while(!isMessage(messageToWaitFor)) {
+		while (!isMessage(messageToWaitFor)) {
 			if (period % 100 == 0) {
 				sendQueue.add(messageToPing);
 			}
@@ -99,7 +130,8 @@ public class Server implements Runnable {
 	}
 
 	/**
-	 * Block the thread until a specific message arrive. After that immediately send an answer.
+	 * Block the thread until a specific message arrive. After that immediately
+	 * send an answer.
 	 */
 	private void waitForAndSend(String messageToWaitFor, String messageToSend) {
 		waitFor(messageToWaitFor);
@@ -109,11 +141,12 @@ public class Server implements Runnable {
 	/**
 	 * Send a message and wait for its response.
 	 */
-	private void sendAndWaitFor(String messageToSend,String messageToWaitFor) {
+	private void sendAndWaitFor(String messageToSend, String messageToWaitFor) {
 		waitForAndPing(messageToWaitFor, messageToSend);
 	}
 
-	/* Initial message sending between the communication parties.
+	/*
+	 * Initial message sending between the communication parties.
 	 */
 	private void handshaking() {
 		waitForAndSend(INITIAL_MESSAGE, INITIAL_MESSAGE);
@@ -165,9 +198,9 @@ public class Server implements Runnable {
 		measuredDirections.put(Field.Direction.BACKWARD, Field.FieldType.UNKNOWN);
 
 		if (directionsToMeasure.get(Field.Direction.LEFT)) {
-			if (array[1].substring(1,2).equals("f")) {
+			if (array[1].substring(1, 2).equals("f")) {
 				measuredDirections.put(Field.Direction.LEFT, Field.FieldType.FREE_NOT_VISITED);
-			} else if (array[1].substring(1,2).equals("o")) {
+			} else if (array[1].substring(1, 2).equals("o")) {
 				measuredDirections.put(Field.Direction.LEFT, Field.FieldType.OCCUPIED);
 			}
 		}
@@ -200,25 +233,24 @@ public class Server implements Runnable {
 
 		goToCells();
 	}
-	
-	private void goToCells(){
+
+	private void goToCells() {
 		Field.Direction dir = algorithm.getNextField();
-		if (dir != null)
-		{
+		if (dir != null) {
 			String messageToSend = "go_to:";
-			switch(dir){
-				case LEFT:
-					messageToSend += "L";
-					break;
-				case RIGHT:
-					messageToSend += "R";
-					break;
-				case FORWARD:
-					messageToSend += "F";
-					break;
-				case BACKWARD:
-					messageToSend += "B";
-					break;
+			switch (dir) {
+			case LEFT:
+				messageToSend += "L";
+				break;
+			case RIGHT:
+				messageToSend += "R";
+				break;
+			case FORWARD:
+				messageToSend += "F";
+				break;
+			case BACKWARD:
+				messageToSend += "B";
+				break;
 			}
 
 			sendQueue.add(messageToSend);
@@ -228,11 +260,13 @@ public class Server implements Runnable {
 			algorithm.stepSuceeded();
 
 			measureCells();
-		}
-		else
-		{
+		} else {
 			sendQueue.add("bye");
 		}
+	}
+
+	public synchronized void close() {
+		closing = true;
 	}
 
 }
